@@ -1,0 +1,4 @@
+{
+    "name": "Workflow that takes care for major release tags",
+    "description": "Keeps major tags (`v1`, `v2`, ...) up to date."
+}
