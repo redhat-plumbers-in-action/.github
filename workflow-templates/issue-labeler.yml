@@ -1,0 +1,90 @@
+---
+
+name: Issue labeler
+on:
+  issues:
+    types: [ opened ]
+
+permissions:
+  contents: read
+
+jobs:
+  label-component:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+
+    strategy:
+      matrix:
+        template: [ issue-template.yml ]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Parse issue form
+        uses: stefanbuck/github-issue-parser@v2
+        id: issue-parser
+        with:
+          template-path: .github/ISSUE_TEMPLATE/${{ matrix.template }}
+
+      - name: Set labels based on type input
+        uses:  redhat-plumbers-in-action/advanced-issue-labeler@v2
+        with:
+          issue-form: ${{ steps.issue-parser.outputs.jsonString }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+...
+
+# Workflow expects following files to function properly:
+
+# .github/ISSUE_TEMPLATE/issue-template.yml
+# =========================================
+# name: Report an Issue
+# description: Issue form for reporting issues and requesting new features.
+
+# body:
+#   - type: markdown
+#     attributes:
+#       value: Thanks for taking the time to fill out this issue!
+
+#   - type: dropdown
+#     id: type
+#     attributes:
+#       label: Type of issue
+#       multiple: false
+#       options:
+#         - 'Bug Report'
+#         - 'Feature Request'
+#         - 'other'
+#     validations:
+#       required: false
+
+#   - type: textarea
+#     id: description
+#     attributes:
+#       label: Description
+#       description: A clear and concise description of what the problem is. E.g. I'm always frustrated when [...]
+#     validations:
+#       required: false
+
+#   - type: textarea
+#     id: solution
+#     attributes:
+#       label: Describe the solution you'd like
+#       description: A clear and concise description of what you want to happen.
+#     validations:
+#       required: false
+
+# .github/advanced-issue-labeler.yml
+# ==================================
+# policy:
+#   - section:
+#       - id: ['type']
+#         block-list: ['other']
+#         label:
+#           - name: bug 🐛
+#             keys: ['Bug Report']
+
+#           - name: RFE 🎁
+#             keys: ['Feature Request']
