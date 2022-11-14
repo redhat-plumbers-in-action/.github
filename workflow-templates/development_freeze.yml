@@ -1,0 +1,49 @@
+---
+
+name: Development Freezer
+on:
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    branches: [ $default-branch ]
+
+permissions:
+  contents: read
+
+jobs:
+  freezer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Development Freezer
+        uses: redhat-plumbers-in-action/devel-freezer@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+...
+
+# Workflow expects following file to be configured to function properly:
+
+# .github/development-freeze.yml
+# ==============================
+# policy:
+#   - tags: ['alpha', 'beta']
+#     feedback:
+#       frozen-state: |
+#         🥶 We are currently in ...
+#         🙏 Please ...
+#       unfreeze-state: |
+#         😎 We are no longer in ...
+
+#   # Suport for regular expressions
+#   - tags: ['^\S*-rc\d$']
+#     feedback:
+#       frozen-state: |
+#         We are currently in a development freeze phase.
+#         Please ...
+#       unfreeze-state: |
+#         We had successfully released a new major release.
+#         We are no longer in a development freeze phase.
